@@ -1,0 +1,141 @@
+---
+title: "TP Introduction au Bootstrap"
+author: "Abdallah DAABOUL"
+date: "30 septembre 2019"
+output: html_document
+---
+
+#Exercice 1
+###Fonction MC.simus
+```{r}
+MC.simus <- function(theta,n , Nsim)
+{ sortie =rep(NA, Nsim)
+  for (nsim in 1:Nsim)
+       {  x=rbinom(n,1,theta)
+          sortie[nsim]=mean(x)
+        }
+return(sortie)
+}
+
+```
+
+```{r}
+n=100
+Nsim=1000
+theta=0.5
+theta.chap=MC.simus(theta,n, Nsim)
+
+par(mfrow=c(1,2))
+hist(theta.chap,prob=T)
+xx= seq(0,1,by=0.01)
+lines(xx, dnorm(xx, theta, sqrt(theta*(1-theta)/n)), col=2)
+
+plot(density(theta.chap))
+xx= seq(0,1,by=0.01)
+lines(xx, dnorm(xx, theta, sqrt(theta*(1-theta)/n)), col=2)
+
+
+```
+
+#Exercice 2
+
+```{r}
+### Q.1)
+n=100
+theta=0.5
+set.seed(1)        #fixe l'aléa : vous aurez tous le même jeu de données
+x=rbinom(n,1,theta)
+
+theta.chap=mean(x) #Estimation de Theta d'après les simulation faites
+
+```
+### Q.2a) Céation de l'echantillion boustrapé
+```{r}
+xstar=sample(x,n,replace=TRUE) #boostrap , retirer n element avec remise de x 
+theta.chap.boost=mean(xstar)
+```
+
+### Q.2b)
+```{r}
+### Q.2b)
+mean.bootstrap <- function(x, B)
+{ ech_boot_mean =rep(NA,B)
+  n=length(x)
+  for (b in 1:B)
+  { xstar=sample(x,n,replace=TRUE)
+    ech_boot_mean[b]=mean(xstar)  } 
+  return(ech_boot_mean)
+}
+ech_boot_mean=mean.bootstrap(x, B=1000)
+```
+
+### Q.2c)
+```{r}
+
+library(boot)
+moyenne <- function(x,i) {return(mean(x[i]))}
+bootsample_mean=boot(x,moyenne,R=1000)
+names(bootsample_mean)
+```
+### Q.3a)
+```{r}
+par(mfrow=c(1,2))
+hist(bootsample_mean$t) #c la meme sortie de la fonction qu on a crée en b
+plot(density(bootsample_mean$t))
+```
+
+### Q.3b)
+La distribution est centré autour de 0.5 qui est la valeur de la moyenne X bar du vecteur x du debut (celui qui suit la loi de bernouilli)
+```{r}
+# Q.3c)
+plot(density(sqrt(n)*(bootsample_mean$t-mean(x))))
+xx= seq(-2,2,by=0.01)
+lines(xx, dnorm(xx,0,sqrt(theta*(1-theta))), col=2)
+
+```
+
+#Q.4)
+```{r}
+quantile(bootsample_mean$t, c(0.025,0.975)) 
+ 
+#b méthode si Symétrique
+ICboot_perc<-boot.ci( bootsample_mean,conf=0.95,type="perc")
+ICboot_perc
+ 
+#c méthode si pas symétrique
+ICboot_bca <-boot.ci(bootsample_mean,conf=0.95,type="bca")
+ICboot_bca
+
+#D'apres TCL :
+Binf=mean(x)-1.96*sd(x)/sqrt(n)
+Bsup=mean(x)+1.96*sd(x)/sqrt(n)
+Binf
+Bsup
+```
+
+#Exercice 3
+###Q1
+```{r}
+n=1000
+set.seed(1)
+x<-rcauchy(n,location=1)
+true.mediane = 1               #médiane théorique
+median(x)
+```
+
+###Q2
+```{r}
+library(boot)
+mediane <- function(x,i) {return(median(x[i]))}
+bootsample_mean=boot(x,mediane,R=1000)
+names(bootsample_mean)
+par(mfrow=c(1,2))
+hist(bootsample_mean$t) #c la meme sortie de la fonction qu on a crée en b
+plot(density(bootsample_mean$t))
+```
+
+###Q3
+```{r}
+
+```
+
